@@ -13,6 +13,14 @@
 
 using namespace std;
 
+/*
+ * Used in DimensionSize helper.
+ */
+enum DIMENSION {
+    HORIZONTAL,
+    VERTICAL
+};
+
 /*********************
 * CONSTRUCTORS, ETC. *
 *********************/
@@ -86,8 +94,7 @@ ImgList::ImgList(PNG& img) {
  *   x dimension.
 **/
 unsigned int ImgList::GetDimensionX() const {
-    // replace the following line with your implementation
-    return -1;
+    return DimensionSize(HORIZONTAL, false);
 }
 
 /**
@@ -99,8 +106,7 @@ unsigned int ImgList::GetDimensionX() const {
  *   y dimension.
 **/
 unsigned int ImgList::GetDimensionY() const {
-    // replace the following line with your implementation
-    return -1;
+    return DimensionSize(VERTICAL, false);
 }
 
 /**
@@ -111,8 +117,7 @@ unsigned int ImgList::GetDimensionY() const {
  *   x dimension.
 **/
 unsigned int ImgList::GetDimensionFullX() const {
-    // replace the following line with your implementation
-    return -1;
+    return DimensionSize(HORIZONTAL, true);
 }
 
 /**
@@ -228,3 +233,26 @@ void ImgList::Copy(const ImgList& otherlist) {
 * IF YOU DEFINED YOUR OWN PRIVATE FUNCTIONS IN imglist-private.h, YOU MAY ADD YOUR IMPLEMENTATIONS BELOW *
 *********************************************************************************************************/
 
+/**
+ * Returns the size of the horizontal or vertical dimension of the list.
+ * @param dimension from DIMENSION enum. Either HORIZONTAL or VERTICAL
+ * @param countCarved if dimension is HORIZONTAL, whether to count skipped entries. No effect for VERTICAL.
+**/
+unsigned int ImgList::DimensionSize(int dimension, bool countCarved) const {
+    ImgNode const * pointer = this->northwest;
+
+    unsigned int count = 0;
+    while (pointer != nullptr) {
+        if (dimension == DIMENSION::HORIZONTAL) {
+            if (countCarved) {
+                count += pointer->skipright;
+            }
+            pointer = pointer->east;
+            count++;
+        } else {
+            pointer = pointer->south;
+            count++;
+        }
+    }
+    return count;
+}

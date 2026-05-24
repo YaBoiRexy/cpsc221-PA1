@@ -11,3 +11,4 @@
 /* ADD YOUR PRIVATE DECLARATIONS HERE */
 /**************************************/
 
+unsigned int DimensionSize(int dimension, bool countCarved) const;

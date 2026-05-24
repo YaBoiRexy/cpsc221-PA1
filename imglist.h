@@ -80,7 +80,7 @@ class ImgList {
         /*********************************************************************/
         /* ADD YOUR OWN PRIVATE FUNCTION DECLARATIONS INTO imglist-private.h */
         /*********************************************************************/
-        #include "imglist-private.h"
+        #include "imglist-private.h"int  bool
 };
 
 #endif
