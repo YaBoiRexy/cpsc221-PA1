@@ -12,3 +12,6 @@
 /**************************************/
 
 unsigned int DimensionSize(int dimension, bool countCarved) const;
+
+static double BrightnessOf(ImgNode * node);
+static double NeighbourDistanceOf(ImgNode * node);

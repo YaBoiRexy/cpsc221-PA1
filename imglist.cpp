@@ -135,12 +135,39 @@ unsigned int ImgList::GetDimensionFullX() const {
  * A note about "brightness" and "colour difference":
  * For PA1, "brightness" will be the sum over the RGB colour channels, multiplied by alpha.
  * "colour difference" between two pixels can be determined
- * using the "distanceTo" function found in RGBAPixel.h.
+ * using the "a" function found in RGBAPixel.h.
 **/
 ImgNode* ImgList::SelectNode(ImgNode* rowstart, int selectionmode) {
-    // add your implementation below
-  
-    return NULL;
+
+    int const MIN_BRIGHTNESS = 0;
+    int const MIN_DIFFERENCE = 1;
+
+    ImgNode * currentNode = rowstart;
+    ImgNode * bestNode = currentNode->east;
+
+    //Check nodes (0, width - 1) not inclusive
+    for (currentNode = currentNode->east;
+                currentNode != nullptr && currentNode->east != nullptr;
+                currentNode = currentNode->east) {
+        switch (selectionmode) {
+
+            case MIN_BRIGHTNESS:
+                if (BrightnessOf(currentNode) < BrightnessOf(bestNode)) {
+                    bestNode = currentNode;
+                }
+                break;
+
+            case MIN_DIFFERENCE:
+                if (NeighbourDistanceOf(currentNode) < NeighbourDistanceOf(bestNode)) {
+                    bestNode = currentNode;
+                }
+                break;
+
+            default:
+                throw invalid_argument("Invalid selection mode.");
+        }
+    }
+    return bestNode;
 }
 
 /**
@@ -242,17 +269,66 @@ unsigned int ImgList::DimensionSize(int dimension, bool countCarved) const {
     ImgNode const * pointer = this->northwest;
 
     unsigned int count = 0;
+
+    //For length of list...
     while (pointer != nullptr) {
-        if (dimension == DIMENSION::HORIZONTAL) {
+
+        //Horizontal dimension
+        if (dimension == HORIZONTAL) {
             if (countCarved) {
                 count += pointer->skipright;
             }
+
             pointer = pointer->east;
-            count++;
-        } else {
+        } else { //Vertical dimension
             pointer = pointer->south;
-            count++;
         }
+
+        count++;
     }
     return count;
+}
+
+/**
+ * Calculate node brightness as sum of r, g, b channels of pixel, multiplied by alpha.
+ * @param node The node whose brightness will be determined.
+ * @return Brightness of node
+ */
+double ImgList::BrightnessOf(ImgNode * node) {
+
+    if (node == nullptr) {
+        throw invalid_argument("Node pointer passed to BrightnessOf is null.");
+    }
+
+    RGBAPixel * pixel = &node->colour;
+    double totalColor = pixel->r + pixel->g + pixel->b;
+    double brightness = totalColor * pixel->a;
+    return brightness;
+}
+
+/**
+ * Calculate the sum of the distance between this node
+ * and each neighbour using distanceTo in RGBAPixel.
+ * @pre node must have west and east neighbours.
+ * @param node The node.
+ * @return Distance between node's neighbours
+ */
+double ImgList::NeighbourDistanceOf(ImgNode * node) {
+
+    if (node == nullptr) {
+        throw invalid_argument("Node pointer passed to NeighbourDistanceOf is null.");
+    }
+
+    if (node->west == nullptr) {
+        throw invalid_argument("Node pointer passed to NeighbourDistanceOf has null west neighbour.");
+    }
+
+    if (node->east == nullptr) {
+        throw invalid_argument("Node pointer passed to NeighbourDistanceOf has null east neighbour.");
+    }
+
+    RGBAPixel * westPixel = &node->west->colour;
+    RGBAPixel * eastPixel = &node->east->colour;
+
+    return node->colour.distanceTo(*westPixel) + node->colour.distanceTo(*eastPixel);
 }
