@@ -8,8 +8,10 @@
 **/
 
 #include "imglist.h"
-
 #include <math.h> // provides fmax, fmin, and fabs functions
+#include <vector>
+
+using namespace std;
 
 /*********************
 * CONSTRUCTORS, ETC. *
@@ -19,8 +21,8 @@
  * Default constructor. Makes an empty list
 **/
 ImgList::ImgList() {
-    // set appropriate values for all member attributes here
-	
+    this->northwest = nullptr;
+    this->southeast = nullptr;
 }
 
 /**
@@ -28,8 +30,48 @@ ImgList::ImgList() {
  * @pre img has dimensions of at least 1x1
 **/
 ImgList::ImgList(PNG& img) {
-    // build the linked node structure and set the member attributes appropriately
-	
+    unsigned int width = img.width();
+    unsigned int height = img.height();
+
+    vector<ImgNode *> previousRow(width, nullptr);
+
+    //For each row
+    for (int row = 0; row < height; row++) {
+
+        //Node to the west of current node. Set in inner loop.
+        ImgNode * previousNode = nullptr;
+
+        //For each column in row
+        for (int col = 0; col < width; col++) {
+
+            //Create current node
+            auto * currentNode = new ImgNode();
+            currentNode->colour = *img.getPixel(col, row);
+
+            //If this is the northwest/southeast corner, set that field
+            if (row == 0 && col == 0) {
+                this->northwest = currentNode;
+            }
+            if ( row == height - 1 && col == width - 1) {
+                this->southeast = currentNode;
+            }
+
+            //If there's a node to the west, link to it
+            if (col != 0) {
+                currentNode->west = previousNode;
+                previousNode->east = currentNode;
+            }
+
+            //If there's a node to the north, link to it
+            if (row != 0) {
+                currentNode->north = previousRow.at(col);
+                previousRow.at(col)->south = currentNode;
+            }
+
+            previousNode = currentNode;
+            previousRow.at(col) = currentNode;
+        }
+    }
 }
 
 /************
